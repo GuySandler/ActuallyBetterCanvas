@@ -928,6 +928,7 @@ function applyOptionsChanges(changes) {
 			case "todo_timeframe":
 			// case "todo_overdues":
 			case "todo_hide_feedback":
+			case "todo_hide_read":
 			case "todo_full_height":
 			case "todo_ignore_card_colors":
 			case "todo_remove_icons":
@@ -3285,7 +3286,18 @@ async function createTodoSections(location) {
                 return cid === String(betterTodoProgressFilter);
             });
 
-        announcements = displayData.filter(item => item.plannable_type == "announcement");
+        // Announcements: dismissed (marked-complete) ones are always
+        // hidden, and already-read ones are hidden unless the user turned
+        // "Hide read announcements" off. This mirrors how native Canvas
+        // clears announcements from the to-do once seen; without it the list
+        // accumulated every announcement in the lookback window (reporters
+        // saw 200+ "Seen" entries from a single year).
+        announcements = displayData.filter(item => {
+            if (item.plannable_type != "announcement") return false;
+            if (item.planner_override?.marked_complete === true) return false;
+            if (options.todo_hide_read !== false && item.plannable.read_state == "read") return false;
+            return true;
+        });
         // Pinned items (locally forced incomplete, e.g. a submitted assignment
         // the user sent back to Tasks) always count as due; everything else is
         // due only when neither submitted nor marked complete.
@@ -3824,15 +3836,30 @@ function populateAnnouncements() {
 					</svg>`}
 				</div>
 			</div>
-			<div style="width:calc(100% - 40px);height:80%;display:flex;flex-direction:column;gap:5px;padding-left:2px;box-sizing:border-box;overflow:hidden;">
+			<div style="width:calc(100% - 40px);height:80%;display:flex;flex-direction:column;gap:5px;padding-left:2px;box-sizing:border-box;overflow:hidden;position:relative;">
 				<div style="display:flex;flex-direction:column;gap:3px;">
 					<span style="color:${classNameColor};font-size:12px;margin-top:-2px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;box-sizing:border-box;padding-right:22px;">${item.context_name}</span>
 					<a href="${domain + item.html_url}" style="color:inherit;text-decoration:none;font-weight:bold;text-overflow:ellipsis;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-5px;">${item.plannable.title}</a>
 					<span style="color:var(--bctext-0);font-size:12px;margin-top:-5px;">${convertToDueDate(item.plannable_date)}</span>
 				</div>
+				<svg class="better-todo-announcement-checkmark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:15px;height:15px;position:absolute;top:0px;right:5px;opacity:0.3;transition:all .3s ease;cursor:pointer;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.3'" title="Mark as seen">
+					<g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+					<g id="SVGRepo_iconCarrier"> <g id="Interface / Checkbox_Check">
+						<path id="Vector" d="M8 12L11 15L16 9M4 16.8002V7.2002C4 6.08009 4 5.51962 4.21799 5.0918C4.40973 4.71547 4.71547 4.40973 5.0918 4.21799C5.51962 4 6.08009 4 7.2002 4H16.8002C17.9203 4 18.4796 4 18.9074 4.21799C19.2837 4.40973 19.5905 4.71547 19.7822 5.0918C20 5.5192 20 6.07899 20 7.19691V16.8036C20 17.9215 20 18.4805 19.7822 18.9079C19.5905 19.2842 19.2837 19.5905 18.9074 19.7822C19.48 20 17.921 20 16.8031 20H7.19691C6.07899 20 5.5192 20 5.0918 19.7822C4.71547 19.5905 4.40973 19.2842 4.21799 18.9079C4 18.4801 4 17.9203 4 16.8002Z" stroke="var(--bctext-0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+					</g></g>
+				</svg>
 			</div>
 		</div>
 		`;
+		// "Mark as seen": sets the same planner override the task checkmark
+		// uses, which also hides the announcement from the list (see the
+		// announcements filter in createTodoSections). Two-way, so with "Hide
+		// read announcements" off a dismissed one can be un-seen again.
+		announcement.querySelector(".better-todo-announcement-checkmark").addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			markAs(item, announcement.firstElementChild, !(item.planner_override?.marked_complete === true));
+		});
 		attachTodoHoverPreview(announcement, item);
 	});
 }

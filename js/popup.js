@@ -2,6 +2,7 @@ const syncedSwitches = ['remind', 'tab_icons', 'dark_mode', 'remlogo', 'full_wid
 const syncedSubOptions = [
 	"grade_analytics_zones",
 	"todo_hide_feedback",
+	"todo_hide_read",
 	"todo_full_height",
     "todo_confetti",
     "todo_progress_rings",
@@ -58,7 +59,7 @@ const exportCardColorToggles = ["gradient_cards", "disable_color_overlay"];
 const exportCardStyles = ["customCardStyles", "imageSize", "cardRoundness", "imageRoundness", "cardSpacing", "cardWidth", "cardHeight", "cardPadding"];
 const exportLayout = ["full_width", "center_cards", "condensed_cards", "equal_height_cards", "remlogo", "hide_new_canvas", "tab_icons"];
 const exportSidebar = ["better_sidebar", "sidebar_scale"];
-const exportTodo = ["better_todo", "todo_hide_feedback", "todo_full_height", "todo_confetti", "todo_progress_rings", "todo_timeframe", "todo_hr24", "todo_separate_scrollbar", "todo_alternate_colors", "todo_ignore_card_colors", "todo_remove_icons", "hover_preview"];
+const exportTodo = ["better_todo", "todo_hide_feedback", "todo_hide_read", "todo_full_height", "todo_confetti", "todo_progress_rings", "todo_timeframe", "todo_hr24", "todo_separate_scrollbar", "todo_alternate_colors", "todo_ignore_card_colors", "todo_remove_icons", "hover_preview"];
 const exportGpa = ["gpa_calc", "gpa_calc_prepend", "gpa_calc_cumulative", "gpa_calc_weighted"];
 const exportBackground = ["customBackgroundLink", "customBackgroundScale", "customBackgroundDaily", "customBackgroundNasaDaily", "fitImageToScreen", "card_transparency", "bg_opacity", "sidebar_opacity", "bg_blur", "sidebar_blur", "card_opacity", "card_blur"];
 // Master "On/off toggles" = every visual toggle (no GPA, no dark-mode schedule,
@@ -120,6 +121,7 @@ const defaultOptions = {
 		"todo_alternate_colors": false,
 		"todo_ignore_card_colors": false,
 		"todo_remove_icons": false,
+        "todo_hide_read": true,
         "condensed_cards": false,
         "center_cards": false,
         "custom_cards": {},
@@ -945,6 +947,7 @@ function setup() {
 			"gpa_calc_cumulative",
 			// /*'card_method_date',*/ "show_updates",
             "todo_hide_feedback",
+            "todo_hide_read",
             "todo_confetti",
 			"todo_full_height",
 			"device_dark",
@@ -1853,6 +1856,7 @@ function saveCurrentTheme() {
                 "custom_font": current["custom_font"],
                 "better_todo": current["better_todo"],
                 "todo_hide_feedback": current["todo_hide_feedback"],
+                "todo_hide_read": current["todo_hide_read"] !== false,
                 "todo_full_height": current["todo_full_height"],
                 "todo_confetti": current["todo_confetti"],
                 "todo_progress_rings": current["todo_progress_rings"],
